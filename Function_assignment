@@ -3,3 +3,60 @@ import re
 import requests
 import shutil
 import glob
+
+def photos_personal(Name,Text_file,Photos_all):
+    
+    ##To read the text in the Text_file with assignment for all:
+    with open(Text_file, 'r') as file:
+        file2 = []
+        for line in file:
+            file2.append(line.strip())
+            
+    ##To clean the already read file from extra symbols:
+    file2 = [s.replace('[', '').replace(']', '').replace(':', '').replace("',", "").replace("'I", "I").replace("G'", "G") for s in file2]
+    file2 = [file for file in file2 if file != '']
+    
+    ##To create a dictionary from clean file2:
+    my_dict = {}
+    current_name = ''
+    current_files = []
+
+    for item in file2:
+        if item.isalpha(): # if item is a name
+            if current_name != '':
+                my_dict[current_name] = current_files 
+            current_name = item
+            current_files = [] 
+        else:
+            current_files.append(item)
+    my_dict[current_name] = current_files
+        
+    #To create a folder on the Desktop Name_photos:
+    Desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
+    New_folder_path = os.path.join(Desktop_path, f"{Name}_photos")
+    if not os.path.exists(New_folder_path):
+        os.mkdir(New_folder_path)
+
+    ##To get the list of special files for the specified Name:
+    my_dict = {Name: files for Name, files in my_dict.items() if files} # remove empty files lists
+
+    if Name in my_dict:
+        Personal_assignment = my_dict[Name]
+    else:
+        print(f"No files found for name '{Name}'")
+    
+    ##To find all paths for jpg files in the folder with all jpg files:
+    img_paths = glob.glob(os.path.join(Photos_all, '*.JPG'))
+    
+    ##To copy special files to Personal folder:
+    for p in os.listdir(Photos_all):
+        source_path = os.path.join(Photos_all, p)
+        if os.path.isfile(source_path) and p.endswith('.JPG') and p in Personal_assignment:
+            destination_path = os.path.join(New_folder_path, p)
+            shutil.copy(source_path, destination_path)
+            
+Name = input("What's your name? ")
+Text_file = 'C:/Users/Elham/Desktop/New_assignment.txt'
+Photos_all = 'C:/Users/Elham/Desktop/Photos_all'
+
+photos_personal(Name,Text_file,Photos_all)
