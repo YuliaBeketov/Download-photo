@@ -1,13 +1,27 @@
-import os
-import re
-import requests
-import shutil
-import glob
+src_dir = input("Enter a directory path to images: ")
+txt_path = input("Enter a path to the assigned text file: ")
+dst_dir = input("Enter a destination directory path: ")
+lbl_name = input("Enter the labeler's name: ")
 
-def photos_personal(Name,Text_file,Photos_all):
+def fn(src_dir:str, txt_path:str, dst_dir:str, lbl_name:str):
     
-    ##To read the text in the Text_file with assignment for all:
-    with open(Text_file, 'r') as file:
+    ##To import libraries:
+    import os
+    import re
+    import requests
+    import shutil
+    import glob
+    
+    ##To check if the the destination/path exists:
+    if not os.path.exists(src_dir):
+        print(f"Error: Folder '{src_dir}' does not exist.")
+    if not os.path.exists(src_dir):
+        print(f"Error: File '{txt_path}' does not exist.")
+    if not os.path.exists(dst_dir):
+        print(f"Error: Destination '{dst_dir}' does not exist.")
+        
+    ##To read the text in the txt_path with assignment for all:
+    with open(txt_path,'r') as file:
         file2 = []
         for line in file:
             file2.append(line.strip())
@@ -31,32 +45,28 @@ def photos_personal(Name,Text_file,Photos_all):
             current_files.append(item)
     my_dict[current_name] = current_files
         
-    #To create a folder on the Desktop Name_photos:
-    Desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
-    New_folder_path = os.path.join(Desktop_path, f"{Name}_photos")
+    #To create a folder on the dst_dir:
+    Destination_path = os.path.join(os.path.expanduser("~"), dst_dir)
+    New_folder_path = os.path.join(dst_dir, f"{lbl_name}_photos")
     if not os.path.exists(New_folder_path):
         os.mkdir(New_folder_path)
 
     ##To get the list of special files for the specified Name:
-    my_dict = {Name: files for Name, files in my_dict.items() if files} # remove empty files lists
+    my_dict = {lbl_name: files for lbl_name, files in my_dict.items() if files} # remove empty files lists
 
-    if Name in my_dict:
-        Personal_assignment = my_dict[Name]
+    if lbl_name in my_dict:
+        Personal_assignment = my_dict[lbl_name]
     else:
-        print(f"No files found for name '{Name}'")
-    
+        print(f"No files found for name '{lbl_name}'")
+        
     ##To find all paths for jpg files in the folder with all jpg files:
-    img_paths = glob.glob(os.path.join(Photos_all, '*.JPG'))
+    img_paths = glob.glob(os.path.join(src_dir, '*.JPG'))
     
     ##To copy special files to Personal folder:
-    for p in os.listdir(Photos_all):
-        source_path = os.path.join(Photos_all, p)
-        if os.path.isfile(source_path) and p.endswith('.JPG') and p in Personal_assignment:
-            destination_path = os.path.join(New_folder_path, p)
-            shutil.copy(source_path, destination_path)
-            
-Name = input("What's your name? ")
-Text_file = 'C:/Users/Elham/Desktop/New_assignment.txt'
-Photos_all = 'C:/Users/Elham/Desktop/Photos_all'
+    jpg_files = [os.path.basename(p) for p in Personal_assignment if p.endswith('.JPG')]
+    src_files = [os.path.join(src_dir, f) for f in jpg_files]
+    dest_folder_path = os.path.join(dst_dir, f"{lbl_name}_photos")
+    shutil.copytree(src_dir, dest_folder_path, dirs_exist_ok=True, ignore=lambda _, files: [f for f in files if f not in jpg_files])
 
-photos_personal(Name,Text_file,Photos_all)
+ 
+fn(src_dir, txt_path, dst_dir, lbl_name)
